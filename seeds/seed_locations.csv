@@ -1,0 +1,3 @@
+location_id,name,state,country,latitude,longitude,timezone,is_active
+van_bc,Vancouver,BC,CA,49.2827,-123.1207,America/Vancouver,true
+sea_wa,Seattle,WA,US,47.6062,-122.3321,America/Los_Angeles,true

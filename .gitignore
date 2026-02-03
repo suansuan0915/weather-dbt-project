@@ -6,3 +6,11 @@ dbt_packages/
 __pycache__/
 *.pyc
 .DS_Store
+
+# local caches / state
+.cache.sqlite
+*.sqlite
+*.db
+
+# ingested data outputs
+data/
