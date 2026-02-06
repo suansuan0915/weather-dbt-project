@@ -9,7 +9,7 @@ from datetime import date, timedelta
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LOCATIONS_CSV = REPO_ROOT / "seeds" / "seed_locations.csv"
-RAW_DIR = REPO_ROOT / "data" / "raw"
+RAW_DIR = REPO_ROOT / "data" / "landing"
 OPEN_METEO_URL = "https://archive-api.open-meteo.com/v1/archive"
 HOURLY_VARS = [
     "temperature_2m",
