@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: bronze
+    schema: bronze
+    tables:
+      - name: weather_hourly
+        description: "Raw hourly weather ingested from Open-Meteo. Partitioned by p_date."
+        loaded_at_field: ingested_at
+      - name: weather_daily
+        description: "Raw daily weather ingested from Open-Meteo. Partitioned by p_date."
+        loaded_at_field: ingested_at

@@ -8,7 +8,7 @@ from pandas.errors import ParserError
 from datetime import date, timedelta
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-LOCATIONS_CSV = REPO_ROOT / "seeds" / "seed_locations.csv"
+LOCATIONS_CSV = REPO_ROOT / "seeds" / "dim_locations.csv"
 RAW_DIR = REPO_ROOT / "data" / "landing"
 OPEN_METEO_URL = "https://archive-api.open-meteo.com/v1/archive"
 HOURLY_VARS = [
@@ -52,7 +52,7 @@ def load_active_locations():
     required = {"location_id", "name", "state", "country", "latitude", "longitude", "timezone", "is_active"}
     missing = required - set(df.columns)
     if missing:
-        raise ValueError(f"seed_locations.csv missing columns: {sorted(missing)}")
+        raise ValueError(f"dim_locations.csv missing columns: {sorted(missing)}")
     
     df["is_active"] = df["is_active"].apply(to_bool)
     df = df[df["is_active"]].copy()
