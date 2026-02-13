@@ -1,0 +1,99 @@
+
+version: 2
+
+models:
+  - name: stg_bronze__weather_daily
+    description: "Staging daily weather data from bronze.weather_daily"
+    columns:
+      - name: location_id
+        description: "id of the location"
+        tests:
+          - not_null
+
+      - name: dates
+        description: "date of the weather data happens"
+        tests:
+          - not_null
+      
+      - name: p_date
+        description: "partition date used in the pipeline"
+        tests: 
+          - not_null
+
+      - name: ingested_at
+        description: "the date that the weather data is ingested into the pipeline"
+        tests: 
+          - not_null
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['location_id', 'dates']
+
+      - dbt_utils.expression_is_true:
+          expression: "temperature_2m_max is not null and temperature_2m_max >= -80 and temperature_2m_max < 70"
+
+      - dbt_utils.expression_is_true:
+          expression: "temperature_2m_min is not null and temperature_2m_min >= -80 and temperature_2m_min < 70"
+
+      - dbt_utils.expression_is_true:
+          expression: "temperature_2m_mean is not null and temperature_2m_mean >= -80 and temperature_2m_mean < 70"
+
+      - dbt_utils.expression_is_true:
+          expression: "rain_sum is null or rain_sum >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "precipitation_sum is null or precipitation_sum >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "snowfall_sum is null or snowfall_sum >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "sunshine_duration is null or sunshine_duration >= 0"
+
+  - name: stg_bronze__weather_hourly
+    description: "Staging hourly weather data from bronze.weather_hourly"
+    columns:
+      - name: location_id
+        description: "id of the location"
+        tests:
+          - not_null
+
+      - name: observed_at
+        description: "date of the weather data happens"
+        tests:
+          - not_null
+      
+      - name: ingested_at
+        description: "date that the data is ingested into the pipeline"
+        tests: 
+          - not_null
+
+      - name: p_date
+        description: "partition date used in the pipeline"
+        tests: 
+          - not_null
+  
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['location_id', 'observed_at']
+
+      - dbt_utils.expression_is_true:
+          expression: "temperature_2m is not null and temperature_2m >= -80 and temperature_2m < 70"
+
+      - dbt_utils.expression_is_true:
+          expression: "relative_humidity_2m is null or relative_humidity_2m >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "precipitation is null or precipitation >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "rain is null or rain >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "snowfall is null or snowfall >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "snow_depth is null or snow_depth >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "wind_speed_10m is null or wind_speed_10m >= 0"
