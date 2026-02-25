@@ -1,0 +1,92 @@
+version: 2
+
+models:
+  - name: int_weather_hourly_enriched
+    description: "Conformed hourly weather data with derived buckets and flags."
+    columns:
+      - name: location_id
+        tests: [not_null]
+      - name: observed_at
+        tests: [not_null]
+      - name: p_date
+        tests: [not_null]
+
+      - name: temp_bucket
+        tests:
+          - accepted_values:
+              values: ['freezing', 'cold', 'mild', 'hot']
+              quote: true
+
+      - name: humidity_bucket
+        tests:
+          - accepted_values:
+              values: ['dry', 'mild', 'moderately humid', 'humid', 'very humid']
+              quote: true
+
+      - name: wind_bucket
+        tests:
+          - accepted_values:
+              values: ['light', 'moderate', 'strong', 'gale']
+              quote: true
+
+      - name: precipitation_bucket
+        tests:
+          - accepted_values:
+              values: ['no precipitation', 'very light', 'light', 'moderate', 'heavy']
+              quote: true
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['location_id', 'observed_at']
+
+      - dbt_utils.expression_is_true:
+          expression: >
+            (precipitation is null and is_precipitating is null)
+            or (precipitation > 0 and is_precipitating = true)
+            or (precipitation <= 0 and is_precipitating = false)
+
+      - dbt_utils.expression_is_true:
+          expression: >
+            (rain is null and is_rain is null)
+            or (rain > 0 and is_rain = true)
+            or (rain <= 0 and is_rain = false)
+
+      - dbt_utils.expression_is_true:
+          expression: >
+            (snowfall is null and is_snowfall is null)
+            or (snowfall > 0 and is_snowfall = true)
+            or (snowfall <= 0 and is_snowfall = false)
+
+      - dbt_utils.expression_is_true:
+          expression: >
+            (temperature_2m is null and temp_bucket is null)
+            or (temperature_2m <= 0 and temp_bucket = 'freezing')
+            or (temperature_2m > 0 and temperature_2m <= 15 and temp_bucket = 'cold')
+            or (temperature_2m > 15 and temperature_2m <= 25 and temp_bucket = 'mild')
+            or (temperature_2m > 25 and temp_bucket = 'hot')
+
+      - dbt_utils.expression_is_true:
+          expression: >
+            (relative_humidity_2m is null and humidity_bucket is null)
+            or (relative_humidity_2m <= 30 and humidity_bucket = 'dry')
+            or (relative_humidity_2m > 30 and relative_humidity_2m <= 50 and humidity_bucket = 'mild')
+            or (relative_humidity_2m > 50 and relative_humidity_2m <= 60 and humidity_bucket = 'moderately humid')
+            or (relative_humidity_2m > 60 and relative_humidity_2m <= 70 and humidity_bucket = 'humid')
+            or (relative_humidity_2m > 70 and humidity_bucket = 'very humid')
+
+      - dbt_utils.expression_is_true:
+          expression: >
+            (wind_speed_10m is null and wind_bucket is null)
+            or (wind_speed_10m <= 19 and wind_bucket = 'light')
+            or (wind_speed_10m > 19 and wind_speed_10m <= 38 and wind_bucket = 'moderate')
+            or (wind_speed_10m > 38 and wind_speed_10m <= 61 and wind_bucket = 'strong')
+            or (wind_speed_10m > 61 and wind_bucket = 'gale')
+
+      - dbt_utils.expression_is_true:
+          expression: >
+            (precipitation is null and precipitation_bucket is null)
+            or (precipitation < 0.1 and precipitation_bucket = 'no precipitation')
+            or (precipitation >= 0.1 and precipitation <= 2.5 and precipitation_bucket = 'very light')
+            or (precipitation > 2.5 and precipitation <= 7.5 and precipitation_bucket = 'light')
+            or (precipitation > 7.5 and precipitation <= 30 and precipitation_bucket = 'moderate')
+            or (precipitation > 30 and precipitation_bucket = 'heavy')
