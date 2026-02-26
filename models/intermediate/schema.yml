@@ -90,3 +90,88 @@ models:
             or (precipitation > 2.5 and precipitation <= 7.5 and precipitation_bucket = 'light')
             or (precipitation > 7.5 and precipitation <= 30 and precipitation_bucket = 'moderate')
             or (precipitation > 30 and precipitation_bucket = 'heavy')
+
+  - name: int_weather_daily_enriched
+    description: "Join daily weather data with hourly rollup data."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['location_id', 'dates']
+
+    columns:
+      - name: location_id
+        tests: [not_null]
+      - name: dates
+        tests: [not_null]
+      - name: daily_ingested_at
+        tests: [not_null]
+      - name: daily_p_date
+        tests: [not_null]
+
+      - name: precipitation_sum_from_hourly
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "precipitation_sum_from_hourly >= 0"
+
+      - name: rain_sum_from_hourly
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "rain_sum_from_hourly >= 0"
+
+      - name: snowfall_sum_from_hourly
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "snowfall_sum_from_hourly >= 0"
+
+      - name: precip_hours
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "precip_hours between 0 and 24"
+
+      - name: rain_hours
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "rain_hours between 0 and 24"
+
+      - name: snowfall_hours
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "snowfall_hours between 0 and 24"
+
+      - name: precipitation_sum
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "precipitation_sum is null or precipitation_sum >= 0"
+
+      - name: rain_sum
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "rain_sum is null or rain_sum >= 0"
+
+      - name: snowfall_sum
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "snowfall_sum is null or snowfall_sum >= 0"
+
+      - name: sunshine_duration
+        description: "Sunshine duration (seconds). Should be within [0, 86400] if present."
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "sunshine_duration is null or sunshine_duration between 0 and 86400"
+
+      - name: diff_temp_max_api_vs_hourly
+        description: "API daily max - hourly-derived max."
+        tests:
+          - dbt_utils.expression_is_true:
+              # allow nulls (e.g., missing hourly rollup)
+              expression: "diff_temp_max_api_vs_hourly is null or abs(diff_temp_max_api_vs_hourly) <= 8"
+
+      - name: diff_temp_min_api_vs_hourly
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "diff_temp_min_api_vs_hourly is null or abs(diff_temp_min_api_vs_hourly) <= 8"
+
+      - name: diff_precip_api_vs_hourly
+        description: "API daily precip sum - hourly-derived precip sum."
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "diff_precip_api_vs_hourly is null or abs(diff_precip_api_vs_hourly) <= 20"
