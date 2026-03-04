@@ -1,111 +1,141 @@
 version: 2
 
 models:
+  - name: dim_locations_mart
+    description: "Dimension table for active/inactive configured weather locations."
+    columns:
+      - name: location_id
+        tests: [not_null, unique]
+      - name: location_name
+        tests: [not_null]
+      - name: is_active
+        tests: [not_null]
+
   - name: fct_weather_daily_api
     description: "Presentation fact: daily weather metrics from Open-Meteo daily endpoint."
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: ['location_id', 'dates']
+          arguments:
+            combination_of_columns: ['location_id', 'dates']
 
     columns:
       - name: location_id
         tests: [not_null]
       - name: dates
         tests: [not_null]
-      
+
       - name: temperature_2m_max
         tests:
           - dbt_utils.expression_is_true:
-              expression: "temperature_2m_max is null or temperature_2m_max between -80 and 70"
+              arguments:
+                expression: "temperature_2m_max is null or temperature_2m_max between -80 and 70"
       - name: temperature_2m_min
         tests:
           - dbt_utils.expression_is_true:
-              expression: "temperature_2m_min is null or temperature_2m_min between -80 and 70"
+              arguments:
+                expression: "temperature_2m_min is null or temperature_2m_min between -80 and 70"
       - name: temperature_2m_mean
         tests:
           - dbt_utils.expression_is_true:
-              expression: "temperature_2m_mean is null or temperature_2m_mean between -80 and 70"
+              arguments:
+                expression: "temperature_2m_mean is null or temperature_2m_mean between -80 and 70"
 
       - name: rain_sum
         tests:
           - dbt_utils.expression_is_true:
-              expression: "rain_sum is null or rain_sum >= 0"
+              arguments:
+                expression: "rain_sum is null or rain_sum >= 0"
       - name: precipitation_sum
         tests:
           - dbt_utils.expression_is_true:
-              expression: "precipitation_sum is null or precipitation_sum >= 0"
+              arguments:
+                expression: "precipitation_sum is null or precipitation_sum >= 0"
       - name: snowfall_sum
         tests:
           - dbt_utils.expression_is_true:
-              expression: "snowfall_sum is null or snowfall_sum >= 0"
+              arguments:
+                expression: "snowfall_sum is null or snowfall_sum >= 0"
 
       - name: sunshine_duration
         description: "Sunshine duration for the day (seconds)."
         tests:
           - dbt_utils.expression_is_true:
-              expression: "sunshine_duration is null or sunshine_duration between 0 and 86400"
+              arguments:
+                expression: "sunshine_duration is null or sunshine_duration between 0 and 86400"
 
   - name: fct_weather_daily_hourly
     description: "Presentation fact table: daily rollups derived from hourly observations."
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: ['location_id', 'dates']
-    
+          arguments:
+            combination_of_columns: ['location_id', 'dates']
+
     columns:
       - name: location_id
         tests: [not_null]
       - name: dates
         tests: [not_null]
-      
+
       - name: temperature_2m_max
         tests:
           - dbt_utils.expression_is_true:
-              expression: "temperature_2m_max is null or temperature_2m_max between -80 and 60"
+              arguments:
+                expression: "temperature_2m_max is null or temperature_2m_max between -80 and 60"
       - name: temperature_2m_min
         tests:
           - dbt_utils.expression_is_true:
-              expression: "temperature_2m_min is null or temperature_2m_min between -80 and 60"
+              arguments:
+                expression: "temperature_2m_min is null or temperature_2m_min between -80 and 60"
       - name: temperature_2m_mean
         tests:
           - dbt_utils.expression_is_true:
-              expression: "temperature_2m_mean is null or temperature_2m_mean between -80 and 60"
+              arguments:
+                expression: "temperature_2m_mean is null or temperature_2m_mean between -80 and 60"
 
       - name: rain_sum
         tests:
           - dbt_utils.expression_is_true:
-              expression: "rain_sum >= 0"
+              arguments:
+                expression: "rain_sum >= 0"
       - name: precipitation_sum
         tests:
           - dbt_utils.expression_is_true:
-              expression: "precipitation_sum >= 0"
+              arguments:
+                expression: "precipitation_sum >= 0"
       - name: snowfall_sum
         tests:
           - dbt_utils.expression_is_true:
-              expression: "snowfall_sum >= 0"
+              arguments:
+                expression: "snowfall_sum >= 0"
 
       - name: wind_speed_10m_max
         tests:
           - dbt_utils.expression_is_true:
-              expression: "wind_speed_10m_max is null or wind_speed_10m_max >= 0"
+              arguments:
+                expression: "wind_speed_10m_max is null or wind_speed_10m_max >= 0"
       - name: wind_speed_10m_mean
         tests:
           - dbt_utils.expression_is_true:
-              expression: "wind_speed_10m_mean is null or wind_speed_10m_mean >= 0"
+              arguments:
+                expression: "wind_speed_10m_mean is null or wind_speed_10m_mean >= 0"
 
       - name: precip_hours
         tests:
           - dbt_utils.expression_is_true:
-              expression: "precip_hours between 0 and 24"
+              arguments:
+                expression: "precip_hours between 0 and 24"
 
       - name: rain_hours
         tests:
           - dbt_utils.expression_is_true:
-              expression: "rain_hours between 0 and 24"
+              arguments:
+                expression: "rain_hours between 0 and 24"
 
       - name: snowfall_hours
         tests:
           - dbt_utils.expression_is_true:
-              expression: "snowfall_hours between 0 and 24"
+              arguments:
+                expression: "snowfall_hours between 0 and 24"
 
   - name: fct_weather_daily
     description: >
@@ -113,13 +143,15 @@ models:
       API daily metrics (used for sunshine_duration). Includes provenance columns.
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: ['location_id', 'dates']
+          arguments:
+            combination_of_columns: ['location_id', 'dates']
 
       - dbt_utils.expression_is_true:
-          expression: >
-            temperature_source is not null
-            or precipitation_source is not null
-            or sunshine_source is not null
+          arguments:
+            expression: >
+              temperature_source is not null
+              or precipitation_source is not null
+              or sunshine_source is not null
 
     columns:
       - name: location_id
@@ -130,59 +162,95 @@ models:
       - name: temperature_2m_max
         tests:
           - dbt_utils.expression_is_true:
-              expression: "temperature_2m_max is null or temperature_2m_max between -80 and 70"
+              arguments:
+                expression: "temperature_2m_max is null or temperature_2m_max between -80 and 70"
       - name: temperature_2m_min
         tests:
           - dbt_utils.expression_is_true:
-              expression: "temperature_2m_min is null or temperature_2m_min between -80 and 70"
+              arguments:
+                expression: "temperature_2m_min is null or temperature_2m_min between -80 and 70"
       - name: temperature_2m_mean
         tests:
           - dbt_utils.expression_is_true:
-              expression: "temperature_2m_mean is null or temperature_2m_mean between -80 and 70"
+              arguments:
+                expression: "temperature_2m_mean is null or temperature_2m_mean between -80 and 70"
 
       - name: rain_sum
         tests:
           - dbt_utils.expression_is_true:
-              expression: "rain_sum is null or rain_sum >= 0"
+              arguments:
+                expression: "rain_sum is null or rain_sum >= 0"
       - name: precipitation_sum
         tests:
           - dbt_utils.expression_is_true:
-              expression: "precipitation_sum is null or precipitation_sum >= 0"
+              arguments:
+                expression: "precipitation_sum is null or precipitation_sum >= 0"
       - name: snowfall_sum
         tests:
           - dbt_utils.expression_is_true:
-              expression: "snowfall_sum is null or snowfall_sum >= 0"
+              arguments:
+                expression: "snowfall_sum is null or snowfall_sum >= 0"
 
       - name: sunshine_duration
         tests:
           - dbt_utils.expression_is_true:
-              expression: "sunshine_duration is null or sunshine_duration between 0 and 86400"
+              arguments:
+                expression: "sunshine_duration is null or sunshine_duration between 0 and 86400"
 
       - name: precip_hours
         tests:
           - dbt_utils.expression_is_true:
-              expression: "precip_hours is null or precip_hours between 0 and 24"
+              arguments:
+                expression: "precip_hours is null or precip_hours between 0 and 24"
       - name: rain_hours
         tests:
           - dbt_utils.expression_is_true:
-              expression: "rain_hours is null or rain_hours between 0 and 24"
+              arguments:
+                expression: "rain_hours is null or rain_hours between 0 and 24"
       - name: snowfall_hours
         tests:
           - dbt_utils.expression_is_true:
-              expression: "snowfall_hours is null or snowfall_hours between 0 and 24"
+              arguments:
+                expression: "snowfall_hours is null or snowfall_hours between 0 and 24"
 
       - name: temperature_source
         tests:
           - accepted_values:
-              values: ['hourly_derived', 'api_daily']
-              quote: true
+              arguments:
+                values: ['hourly_derived', 'api_daily']
+                quote: true
       - name: precipitation_source
         tests:
           - accepted_values:
-              values: ['hourly_derived', 'api_daily']
-              quote: true
+              arguments:
+                values: ['hourly_derived', 'api_daily']
+                quote: true
       - name: sunshine_source
         tests:
           - accepted_values:
-              values: ['api_daily']
-              quote: true
+              arguments:
+                values: ['api_daily']
+                quote: true
+
+  - name: fct_weather_daily_quality
+    description: "Daily data-quality and reconciliation KPI fact for pipeline monitoring."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['location_id', 'dates']
+    columns:
+      - name: location_id
+        tests: [not_null]
+      - name: dates
+        tests: [not_null]
+      - name: completeness_score
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "completeness_score between 0 and 1"
+      - name: reconciliation_status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['ok', 'warning', 'missing_hourly']
+                quote: true
