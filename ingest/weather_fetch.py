@@ -39,12 +39,12 @@ def load_active_locations():
         df = pd.read_csv(LOCATIONS_CSV)
     except FileNotFoundError as e:
         raise FileNotFoundError(
-            f"Cannot find locations CSV at: {csv_path}. "
+            f"Cannot find locations CSV at: {LOCATIONS_CSV}. "
             f"Make sure it exists and you are running inside the repo."
         ) from e
     except ParserError as e:
         raise ParserError(
-            f"CSV parse error in {csv_path}. "
+            f"CSV parse error in {LOCATIONS_CSV}. "
             f"Common cause: a comma inside a field like name=Seattle, WA. "
             f'Fix by quoting: "Seattle, WA" or removing the comma.'
         ) from e
@@ -66,6 +66,15 @@ def load_active_locations():
     return df
 
 def default_date_window():
+    start_override = os.getenv("WEATHER_START_DATE")
+    end_override = os.getenv("WEATHER_END_DATE")
+    if start_override and end_override:
+        start_date = date.fromisoformat(start_override)
+        end_date = date.fromisoformat(end_override)
+        if start_date > end_date:
+            raise ValueError("WEATHER_START_DATE must be <= WEATHER_END_DATE.")
+        return start_date, end_date
+
     lookback_days = int(os.getenv("WEATHER_LOOKBACK_DAYS", "90"))
     end_date = date.today() - timedelta(days=5) # 5-day delay 
     start_date = end_date - timedelta(days=lookback_days)
