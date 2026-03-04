@@ -3,6 +3,9 @@ version: 2
 sources:
   - name: bronze
     schema: bronze
+    freshness:
+      warn_after: {count: 7, period: day}
+      error_after: {count: 30, period: day}
     tables:
       - name: weather_hourly
         description: "Raw hourly weather ingested from Open-Meteo. Partitioned by p_date."
