@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-RAW_DIR = REPO_ROOT / "data" / "raw"
+RAW_DIR = REPO_ROOT / "data" / "landing"
 BRONZE_DIR = REPO_ROOT / "data" / "bronze"
 OUT_HOURLY = BRONZE_DIR / "weather_hourly"
 OUT_DAILY = BRONZE_DIR / "weather_daily"
@@ -64,11 +64,10 @@ def jsonl_to_parquet(path):
             d = _explode_time_series(record, "daily", "date")
             if not d.empty:
                 daily_records.append(d)
-        
-            hourly_df = pd.concat(hourly_records, ignore_index=True) if hourly_records else pd.DataFrame()
-            daily_df = pd.concat(daily_records, ignore_index=True) if daily_records else pd.DataFrame()
 
-        return hourly_df, daily_df
+    hourly_df = pd.concat(hourly_records, ignore_index=True) if hourly_records else pd.DataFrame()
+    daily_df = pd.concat(daily_records, ignore_index=True) if daily_records else pd.DataFrame()
+    return hourly_df, daily_df
     
 def write_partitioned_parquet(df, out_path, partition_col):
     out_path.mkdir(parents=True, exist_ok=True)
