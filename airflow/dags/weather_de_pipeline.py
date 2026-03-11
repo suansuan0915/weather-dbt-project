@@ -24,6 +24,7 @@ with DAG(
     start_date=datetime(2024, 1, 1),
     schedule=None,
     catchup=False,
+    max_active_runs=1,
     dagrun_timeout=timedelta(hours=2),
     default_args={"retries": 2, "retry_delay": timedelta(minutes=5)},
     tags=["weather", "dbt", "data-engineering"],
@@ -42,6 +43,8 @@ set -euo pipefail
 START_DATE="{{{{ dag_run.conf.get('weather_start_date', params.weather_start_date) if dag_run else params.weather_start_date }}}}"
 END_DATE="{{{{ dag_run.conf.get('weather_end_date', params.weather_end_date) if dag_run else params.weather_end_date }}}}"
 LOOKBACK_DAYS="{{{{ dag_run.conf.get('weather_lookback_days', params.weather_lookback_days) if dag_run else params.weather_lookback_days }}}}"
+if [[ "$START_DATE" == "None" ]]; then START_DATE=""; fi
+if [[ "$END_DATE" == "None" ]]; then END_DATE=""; fi
 
 if [[ -n "$START_DATE" && -n "$END_DATE" ]]; then
   WEATHER_START_DATE="$START_DATE" WEATHER_END_DATE="$END_DATE" {DATA_VENV_BIN}/python ingest/weather_fetch.py
@@ -73,6 +76,12 @@ fi
         env=runtime_env,
     )
 
+    dbt_seed = BashOperator(
+        task_id="dbt_seed",
+        bash_command=f"cd {PROJECT_DIR} && {DATA_VENV_BIN}/dbt seed --full-refresh",
+        env=runtime_env,
+    )
+
     dbt_source_freshness = BashOperator(
         task_id="dbt_source_freshness",
         bash_command=f"cd {PROJECT_DIR} && {DATA_VENV_BIN}/dbt source freshness",
@@ -81,13 +90,13 @@ fi
 
     dbt_run = BashOperator(
         task_id="dbt_run",
-        bash_command=f"cd {PROJECT_DIR} && {DATA_VENV_BIN}/dbt run",
+        bash_command=f"cd {PROJECT_DIR} && {DATA_VENV_BIN}/dbt run --exclude try",
         env=runtime_env,
     )
 
     dbt_test = BashOperator(
         task_id="dbt_test",
-        bash_command=f"cd {PROJECT_DIR} && {DATA_VENV_BIN}/dbt test",
+        bash_command=f"cd {PROJECT_DIR} && {DATA_VENV_BIN}/dbt test --exclude try",
         env=runtime_env,
     )
 
@@ -96,6 +105,7 @@ fi
         >> convert_jsonl_to_parquet
         >> load_bronze_to_postgres
         >> dbt_deps
+        >> dbt_seed
         >> dbt_source_freshness
         >> dbt_run
         >> dbt_test
