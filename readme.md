@@ -180,5 +180,5 @@ make airflow-down
 
 ## Notes
 
-- `models/try.sql` is excluded from Airflow and manual dbt run/test commands
+- `models/try.sql` (if exists) is as a playground for development, and is excluded from Airflow and manual dbt run/test commands
 - `dim_locations.csv` is reseeded on each Airflow run, so the warehouse can be rebuilt from scratch
