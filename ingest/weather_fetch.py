@@ -5,7 +5,7 @@ import requests
 import time
 import pandas as pd
 from pandas.errors import ParserError
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LOCATIONS_CSV = REPO_ROOT / "seeds" / "dim_locations.csv"
@@ -128,6 +128,7 @@ def get_json_with_retry(url, params, timeout_s=60, max_retries=5):
 def fetch_by_location(row, start_date, end_date):
     params = build_params(row, start_date, end_date)
     responses = get_json_with_retry(OPEN_METEO_URL, params=params)
+    ingested_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
     return {
         "location_id": row["location_id"],
@@ -136,7 +137,7 @@ def fetch_by_location(row, start_date, end_date):
         "timezone": row["timezone"],
         "start_date": start_date.isoformat(),
         "end_date": end_date.isoformat(),
-        "ingested_at": date.today().isoformat(),
+        "ingested_at": ingested_at,
         "payload": responses,
         "request_params": params, 
     }

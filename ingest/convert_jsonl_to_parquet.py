@@ -41,6 +41,7 @@ def _explode_time_series(record, time_series, time_col_name):
     df["ingested_at"] = record.get("ingested_at")
 
     df[time_col_name] = pd.to_datetime(df[time_col_name], errors="coerce")
+    df["ingested_at"] = pd.to_datetime(df["ingested_at"], errors="coerce", utc=True)
 
     return df
 
