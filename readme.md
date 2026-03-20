@@ -4,7 +4,7 @@ End-to-end batch pipeline for historical weather data using Python, Postgres, db
 
 ## Stack
 
-- Source: Open-Meteo Archive API
+- Source: Open-Meteo Historical API
 - Ingestion: Python
 - Storage:
   - landing: JSONL
@@ -25,7 +25,7 @@ End-to-end batch pipeline for historical weather data using Python, Postgres, db
 
 ```mermaid
 flowchart LR
-    A["Open-Meteo Archive API"] --> B["Python ingestion<br/>ingest/weather_fetch.py"]
+    A["Open-Meteo Historical API"] --> B["Python ingestion<br/>ingest/weather_fetch.py"]
     C["seeds/dim_locations.csv"] --> B
     B --> D["Landing JSONL<br/>data/landing/"]
     D --> E["JSONL to Parquet<br/>ingest/convert_jsonl_to_parquet.py"]
@@ -108,12 +108,12 @@ dbt test --exclude try
 Optional fixed fetch window:
 
 ```bash
-WEATHER_START_DATE=2024-01-01 WEATHER_END_DATE=2024-03-31 python3 ingest/weather_fetch.py
+WEATHER_START_DATE=2024-02-01 WEATHER_END_DATE=2024-02-07 python3 ingest/weather_fetch.py
 ```
 
 Default fetch behavior when dates are not provided:
 
-- `WEATHER_LOOKBACK_DAYS=90`
+- `WEATHER_LOOKBACK_DAYS=7`
 - `end_date = today - 5 days`
 
 ## Airflow Run
@@ -169,7 +169,7 @@ Example trigger with a fixed window:
 ```bash
 docker compose -f docker-compose.airflow.yml exec airflow-scheduler \
   airflow dags trigger weather_de_pipeline \
-  --conf '{"weather_start_date":"2024-01-01","weather_end_date":"2024-03-31"}'
+  --conf '{"weather_start_date":"2024-01-01","weather_end_date":"2024-01-07"}'
 ```
 
 Stop services:
