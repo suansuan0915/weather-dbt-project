@@ -31,7 +31,7 @@ with DAG(
     params={
         "weather_start_date": None,
         "weather_end_date": None,
-        "weather_lookback_days": 90,
+        "weather_lookback_days": 7,
     },
 ) as dag:
     fetch_open_meteo_data = BashOperator(
