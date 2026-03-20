@@ -54,6 +54,23 @@ def load_parquet_to_postgres(
     
     df = pd.read_parquet(parquet_path)
 
+    missing_key_cols = [c for c in key_cols if c not in df.columns]
+    if missing_key_cols:
+        raise ValueError(f"Missing key columns in {parquet_path}: {missing_key_cols}")
+
+    sort_cols = [c for c in ["ingested_at"] if c in df.columns]
+    if sort_cols:
+        df = df.sort_values(sort_cols)
+
+    original_rows = len(df)
+    df = df.drop_duplicates(subset=key_cols, keep="last").reset_index(drop=True)
+    duplicate_rows = original_rows - len(df)
+    if duplicate_rows:
+        print(
+            f"[INFO] Removed {duplicate_rows:,} duplicate rows from {parquet_path} "
+            f"before loading {schema}.{table}."
+        )
+
     if df.empty:
         print(f"[SKIP] {schema}.{table}: dataframe is empty.")
         return
