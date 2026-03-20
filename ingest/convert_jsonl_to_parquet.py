@@ -1,4 +1,5 @@
 import json
+import shutil
 from pathlib import Path
 import pandas as pd
 
@@ -71,6 +72,8 @@ def jsonl_to_parquet(path):
     return hourly_df, daily_df
     
 def write_partitioned_parquet(df, out_path, partition_col):
+    if out_path.exists():
+        shutil.rmtree(out_path)
     out_path.mkdir(parents=True, exist_ok=True)
 
     if df.empty:
