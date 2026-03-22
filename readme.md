@@ -2,6 +2,29 @@
 
 End-to-end batch pipeline for historical weather data using Python, Postgres, dbt, and Airflow.
 
+## Project Evolution
+This repository started as a local data engineering project built with Python, Postgres, dbt, and Airflow.
+
+Current stable architecture (`v1-local-postgres`):
+- raw weather responses stored in local files
+- bronze data loaded into Postgres
+- dbt models build staging, intermediate, and marts
+- Airflow orchestrates the batch pipeline
+
+Target migration (`v2-gcs-databricks`):
+- raw weather responses stored in Google Cloud Storage (GCS)
+- bronze tables stored in Databricks Delta tables
+- dbt runs on Databricks for silver and gold layers
+- orchestration moves toward Databricks Workflows
+
+Why this migration:
+- remove dependence on local disk for growing historical data
+- align the project with modern lakehouse practices
+
+Detailed planning docs:
+- [V2 Architecture](docs/v2_architecture.md)
+- [Migration Checklist](docs/migration_checklist.md)
+
 ## Stack
 
 - Source: Open-Meteo Historical API
